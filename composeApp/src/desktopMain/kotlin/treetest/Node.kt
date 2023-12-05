@@ -1,12 +1,20 @@
 package treetest
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.sharp.Favorite
+import androidx.compose.material.icons.sharp.List
+import androidx.compose.material.icons.twotone.Favorite
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -115,11 +123,46 @@ fun TreeItem(
   treeListElement: TreeListElement,
   updateTreeState: (Int, Boolean) -> Unit
 ) {
-  if (treeListElement.isVisibleInList(flatList)) {
-    Row(modifier = Modifier.padding(start = (treeListElement.level * 5).dp)) {
-      Button({ updateTreeState.invoke(flatList.indexOf(treeListElement), !treeListElement.isExpanded) }) {
-        Text(treeListElement.name)
+  AnimatedVisibility(
+    visible = treeListElement.isVisibleInList(flatList),
+    enter = expandVertically()
+  ) {
+    Row(
+      modifier = Modifier
+        .padding(start = (treeListElement.level * 12).dp),
+      horizontalArrangement = Arrangement.Start,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      if (treeListElement.hasChildren) {
+        ButtonWithArrow(
+          treeListElement.isExpanded,
+          onClick = { updateTreeState.invoke(flatList.indexOf(treeListElement), !treeListElement.isExpanded) }
+        )
+      } else {
+        IconButton(
+          modifier = Modifier.size(24.dp),
+          onClick = {},
+        ) {
+          Icon(
+            Icons.Sharp.List,
+            contentDescription = "Leaf"
+          )
+        }
       }
+      Text(treeListElement.name)
     }
+  }
+}
+
+@Composable
+fun ButtonWithArrow(expanded: Boolean, onClick: () -> Unit) {
+  IconButton(
+    modifier = Modifier.size(24.dp),
+    onClick = onClick
+  ) {
+    Icon(
+      if (expanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowRight,
+      contentDescription = "Arrow Icon",
+    )
   }
 }
