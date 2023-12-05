@@ -2,6 +2,7 @@ package treetest
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,13 +52,15 @@ data class TreeListElement(
     }
     if (index == 0) return true
     val levelAtThis = level
+    val list:MutableList<TreeListElement> = mutableListOf()
     while (index-- > 0) {
       val topNode = treeList[index]
-      if ((topNode.level) < levelAtThis) {
-        return topNode.isExpanded
+      if (topNode.level < levelAtThis) {
+        list.add(topNode)
       }
     }
-    return false
+    return list.all { it.isExpanded }
+
   }
 }
 
@@ -74,30 +77,6 @@ class Node(private var name: String, private var children: MutableList<Node> = m
     return children.toList()
   }
 
-}
-
-fun main() = application {
-
-  val tree = Node(
-    "pvServer", mutableListOf(
-      Node(
-        "vir", mutableListOf(
-          Node("modeFlag"),
-          Node("vTimer")
-        )
-      ),
-      Node("td")
-    )
-  )
-  val flatList = tree.getFlatList(tree)
-  flatList.forEach {
-    println("$it ${it.isVisibleInList(flatList)}")
-  }
-  Window(onCloseRequest = ::exitApplication) {
-    MaterialTheme {
-      Tree(tree)
-    }
-  }
 }
 
 @Composable
@@ -125,7 +104,8 @@ fun TreeItem(
 ) {
   AnimatedVisibility(
     visible = treeListElement.isVisibleInList(flatList),
-    enter = expandVertically()
+    enter = expandVertically(),
+    exit = shrinkVertically()
   ) {
     Row(
       modifier = Modifier
@@ -164,5 +144,28 @@ fun ButtonWithArrow(expanded: Boolean, onClick: () -> Unit) {
       if (expanded) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowRight,
       contentDescription = "Arrow Icon",
     )
+  }
+}
+
+fun main() = application {
+  val tree = Node(
+    "pvServer", mutableListOf(
+      Node(
+        "vir", mutableListOf(
+          Node("modeFlag"),
+          Node("vTimer")
+        )
+      ),
+      Node("td")
+    )
+  )
+  val flatList = tree.getFlatList(tree)
+  flatList.forEach {
+    println("$it ${it.isVisibleInList(flatList)}")
+  }
+  Window(onCloseRequest = ::exitApplication) {
+    MaterialTheme {
+      Tree(tree)
+    }
   }
 }
